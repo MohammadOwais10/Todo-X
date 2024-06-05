@@ -4,130 +4,111 @@ import { addTask } from "../redux/tasksSlice";
 import {
   TextField,
   Button,
-  Select,
-  MenuItem,
   Box,
+  FormControl,
+  FormLabel,
+  RadioGroup,
+  FormControlLabel,
+  Radio,
+  MenuItem,
+  Select,
   Typography,
 } from "@mui/material";
-import AddIcon from "@mui/icons-material/Add";
-import CloseIcon from "@mui/icons-material/Close";
-import { useMediaQuery } from "@mui/material";
 
-const TaskInput = () => {
-  const [isOpen, setIsOpen] = useState(false);
+const TaskInput = ({ toggleTaskInput }) => {
   const [task, setTask] = useState("");
-  const [priority, setPriority] = useState("Medium");
+  const [priority, setPriority] = useState("Low");
+  const [type, setType] = useState("Indoor");
+  const [location, setLocation] = useState("");
   const [error, setError] = useState("");
   const dispatch = useDispatch();
-  const isMobile = useMediaQuery("(max-width: 600px)");
 
   const handleAddTask = () => {
-    if (task !== "" && priority !== "") {
-      dispatch(addTask({ id: Date.now(), task, priority }));
+    if (task !== "") {
+      const newTask = {
+        task,
+        priority,
+        type,
+        location: type === "Outdoor" ? location : "",
+        date: new Date().toLocaleDateString(),
+      };
+      dispatch(addTask(newTask));
       setTask("");
-      setIsOpen(false);
-      setError("");
+      setPriority("Low");
+      setType("Indoor");
+      setLocation("");
+      toggleTaskInput();
     } else {
-      setError("Task Cannot be null!");
+      setError("Task cannot be blank");
     }
   };
 
-  const currentDate = new Date().toLocaleDateString("en-US", {
-    weekday: "long",
-    day: "numeric",
-    year: "numeric",
-  });
-
   return (
     <Box
-      display="flex"
-      flexDirection={"column"}
       sx={{
-        background: "#b4d7ff",
         padding: 2,
-        borderRadius: 4,
-        height: isOpen && isMobile ? 220 : "auto",
+        borderRadius: 2,
+        marginY: 2,
+        backgroundColor: "#e3f0ff",
       }}>
+      <TextField
+        label="Task"
+        value={task}
+        onChange={(e) => setTask(e.target.value)}
+        fullWidth
+        margin="normal"
+        sx={{ backgroundColor: "white" }}
+      />
+      {error && <Typography color="error">{error}</Typography>}
+      <FormControl fullWidth margin="normal">
+        <FormLabel>Priority</FormLabel>
+        <Select
+          value={priority}
+          onChange={(e) => setPriority(e.target.value)}
+          sx={{ backgroundColor: "white" }}>
+          <MenuItem value="Low">Low</MenuItem>
+          <MenuItem value="Medium">Medium</MenuItem>
+          <MenuItem value="High">High</MenuItem>
+        </Select>
+      </FormControl>
+      <FormControl component="fieldset" fullWidth margin="normal">
+        <FormLabel component="legend">Type</FormLabel>
+        <RadioGroup row value={type} onChange={(e) => setType(e.target.value)}>
+          <FormControlLabel value="Indoor" control={<Radio />} label="Indoor" />
+          <FormControlLabel
+            value="Outdoor"
+            control={<Radio />}
+            label="Outdoor"
+          />
+        </RadioGroup>
+      </FormControl>
+      {type === "Outdoor" && (
+        <TextField
+          label="Location"
+          value={location}
+          onChange={(e) => setLocation(e.target.value)}
+          fullWidth
+          margin="normal"
+          sx={{ backgroundColor: "white" }}
+        />
+      )}
       <Box
-        mb={2}
-        mr={1}
-        display="flex"
-        justifyContent="flex-start"
-        alignItems="left"
-        flexDirection="row">
-        <Box mr={2}>
-          <Typography variant="body1" fontSize={20} color="text.secondary">
-            Welcome to the new way to add tasks!
-          </Typography>
-          <Typography variant="body2" fontSize={18} fontWeight={600}>
-            {currentDate}
-          </Typography>
-        </Box>
-        {!isOpen && (
-          <Button
-            variant="outlined"
-            onClick={() => setIsOpen(true)}
-            sx={{ maxHeight: 60, minWidth: 140 }}>
-            <AddIcon /> New Task
-          </Button>
-        )}
+        sx={{ display: "flex", justifyContent: "space-between", marginTop: 2 }}>
+        <Button
+          onClick={handleAddTask}
+          variant="contained"
+          color="primary"
+          sx={{ boxShadow: "none" }}>
+          Add Task
+        </Button>
+        <Button
+          onClick={toggleTaskInput}
+          variant="outlined"
+          color="error"
+          sx={{ boxShadow: "none" }}>
+          Cancel
+        </Button>
       </Box>
-      <>
-        {isOpen && (
-          <Box
-            gap={3}
-            display="flex"
-            flexDirection={isMobile ? "column" : "row"}
-            height={55}>
-            <Box gap={1} display="flex" height={55}>
-              <Box display={"flex"} flexDirection={"column"}>
-                <TextField
-                  label="New Task"
-                  value={task}
-                  required
-                  onChange={(e) => setTask(e.target.value)}
-                />
-                {error && !isMobile && (
-                  <Typography color="error" pt={2}>
-                    {error}
-                  </Typography>
-                )}
-              </Box>
-
-              <Select
-                value={priority}
-                onChange={(e) => setPriority(e.target.value)}>
-                <MenuItem value="High">High</MenuItem>
-                <MenuItem value="Medium">Medium</MenuItem>
-                <MenuItem value="Low">Low</MenuItem>
-              </Select>
-            </Box>
-
-            <Box gap={0.5} display="flex">
-              <Button
-                variant="contained"
-                color="success"
-                sx={{ boxShadow: "none" }}
-                onClick={handleAddTask}>
-                Add Task
-              </Button>
-              <Button
-                variant="outlined"
-                color="error"
-                onClick={() => {
-                  setIsOpen(false);
-                  setTask("");
-                  setError("");
-                }}>
-                <CloseIcon /> Close
-              </Button>
-            </Box>
-            {error && isMobile && (
-              <Typography color="error">{error}</Typography>
-            )}
-          </Box>
-        )}
-      </>
     </Box>
   );
 };

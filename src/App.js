@@ -1,14 +1,20 @@
-import React from "react";
+import React, { useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { logout } from "./redux/authSlice";
 import TaskInput from "./components/TaskInput";
 import TaskList from "./components/TaskList";
 import Login from "./components/Login";
+import Welcome from "./components/Welcome";
 import { Button, Grid, Box, Typography } from "@mui/material";
 
 const App = () => {
   const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
   const dispatch = useDispatch();
+  const [showTaskInput, setShowTaskInput] = useState(false);
+
+  const toggleTaskInput = () => {
+    setShowTaskInput((prevState) => !prevState);
+  };
 
   return (
     <div style={{ maxWidth: "850px", marginInline: "auto", paddingInline: 10 }}>
@@ -30,9 +36,12 @@ const App = () => {
               </Button>
             </Box>
 
-            <Box mt={2}>
-              <TaskInput />
-            </Box>
+            <Welcome toggleTaskInput={toggleTaskInput} />
+            {showTaskInput && (
+              <Box mt={2}>
+                <TaskInput toggleTaskInput={toggleTaskInput} />
+              </Box>
+            )}
 
             <Grid container spacing={2}>
               <Grid item xs={12}>
